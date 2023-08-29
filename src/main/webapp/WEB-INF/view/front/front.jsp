@@ -45,45 +45,41 @@
 				</div>
 				<div id="hlvBody">
 					<div class="info-body">
-						<div class="info-btn" onclick="setLeft()">
+						<div class="info-btn" onclick="setHlvClick(0)">
 							<img src="/images/left-btn.png">
 							Left
 						</div>
-						<div class="info-btn" onclick="setRight()">
+						<div class="info-btn" onclick="setHlvClick(1)">
 							Right
 							<img src="/images/right-btn.png">
 						</div>
 					</div>
 					<div class="info-footer">
 						<div class="footer-title">
-							<img src="/images/icon_warning.png">
-							<span>
-							경로협상 조건이 아닙니다.
-						</span>
+<%--							<img src="/images/icon_warning.png">--%>
+							<span id="hlvMessageTxt">
+							</span>
 						</div>
-						<div class="footer-message">
-							호스트차량이 타켓차량 후위에 있어 경로협상을 할 수 없습니다.
+						<div  class="footer-message">
 						</div>
 					</div>
 				</div>
 				<div id="tlvBody" style="display: none;">
 					<div class="info-body">
-						<div class="info-btn" onclick="setAccept()">
+						<div class="info-btn" setTlvClick="setAccept(0)">
 							Accept
 						</div>
-						<div class="info-btn" onclick="setReject()">
+						<div class="info-btn" setTlvClick="setReject(1)">
 							Reject
 						</div>
 					</div>
 					<div class="info-footer">
 						<div class="footer-title">
-							<img src="/images/icon_warning.png">
-							<span>
-							경로협상 조건이 아닙니다.
+							<%--							<img src="/images/icon_warning.png">--%>
+							<span id="tlvMessageTxt">
 							</span>
 						</div>
-						<div class="footer-message">
-							호스트차량이 타켓차량 후위에 있어 경로협상을 할 수 없습니다.
+						<div  class="footer-message">
 						</div>
 					</div>
 				</div>
@@ -91,14 +87,14 @@
 			<div class="info-detail-gps">
 				<div class="iconArea">
 					<div class="icon-body">
-						<img src="/images/icon_map.png">
+						<img id="gpsStatus" src="/images/gps.png">
 						<span>
 							GPS
 						</span>
 					</div>
 					<div class="mt32"></div>
 					<div class="icon-body">
-						<img src="/images/v2x.png">
+						<img id="v2xStatus" src="/images/v2x.png">
 						<span>
 							V2X
 						</span>
@@ -109,7 +105,7 @@
 						Latency
 					</div>
 					<div class="gps-body">
-						<div class="gps-value">0.00000</div>
+						<div id="latency" class="gps-value">0.00000</div>
 						<div class="gps-unit">ms</div>
 					</div>
 
@@ -119,7 +115,7 @@
 						Speed
 					</div>
 					<div class="gps-body">
-						<div class="gps-value">100.000</div>
+						<div id="speed" class="gps-value">100.000</div>
 						<div class="gps-unit">Mbps</div>
 					</div>
 				</div>

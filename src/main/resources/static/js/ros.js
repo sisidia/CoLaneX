@@ -2,35 +2,41 @@
 
 const ros = new ROSLIB.Ros();
 
-const topic = new ROSLIB.Topic({
+
+const hlvSystemTopic = new ROSLIB.Topic({
     ros: ros,
-    name: '/topic',
-    messageType: 'std_msgs/String'
+    name: '/hlv_system',
+    messageType: "std_msgs/Float32MultiArray",
 });
 
 
 const tlvSystemTopic = new ROSLIB.Topic({
     ros: ros,
-    name: "/tlv_system",
-    messageType: "std_msgs/Float32MultiArray",
-});
-const tlvSignalTopic = new ROSLIB.Topic({
-    ros: ros,
-    name: "/tlv_signal",
-    messageType: "std_msgs/Int8"
-});
-
-const hlvSystemTopic = new ROSLIB.Topic({
-    ros: ros,
-    name: "/hlv_system",
+    name: '/tlv_system',
     messageType: "std_msgs/Float32MultiArray",
 });
 
-const hlvPostionTopic = new ROSLIB.Topic({
+const hlvGeojsonTopic = new ROSLIB.Topic({
     ros: ros,
-    name: "/hlv_position",
-    // messageType: "std_msgs/Float32MultiArray",
+    name: '/planning/hlv_geojson',
 });
+
+const tlvGeojsonTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: '/planning/tlv_geojson',
+});
+
+const hlvPoseTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: "/car/hlv_pose",
+});
+
+
+const tlvPoseTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: "/car/tlv_pose",
+});
+
 
 const hlvSignalTopic = new ROSLIB.Topic({
     ros: ros,
@@ -38,55 +44,55 @@ const hlvSignalTopic = new ROSLIB.Topic({
     messageType: "std_msgs/Int8"
 });
 
+const tlvSignalTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: "/tlv_signal",
+    messageType: "std_msgs/Int8"
+});
+
+
+
 window.addEventListener('DOMContentLoaded', function() {
     initRos();
 });
 
 
-
-
 const initRos = function() {
     ros.connect('ws://10.28.2.120:9090');
 
+
+    hlvPoseTopic.subscribe(function (message) {
+        updataVehicle('vehicle' , message.position);
+    });
+
+    tlvPoseTopic.subscribe(function (message) {
+        updataVehicle('vehicle2' , message.position);
+    });
+
+
+    hlvGeojsonTopic.subscribe(function (message) {
+        const lineObj = JSON.parse(message.data);
+        updateLine('route2',lineObj);
+    });
+
+    tlvGeojsonTopic.subscribe(function (message) {
+        const lineObj = JSON.parse(message.data);
+        updateLine('route',lineObj);
+    });
+
+
     hlvSystemTopic.subscribe(function (message) {
-        // console.log('hlvSystemTopic',message);
-        // setMessageIdx(message.data[0]);
-        // setSystem([message.data[1], message.data[2], message.data[3], message.data[4]]);
-        // if (message.data[0] === 3) {
-        //     hlvSignalTopic.publish({ data: 0 });
-        //     setSignalClasses([classes.basic50, classes.basic50]);
-        // }
+        updateSystem('hlvMode' , message.data);
     });
 
     tlvSystemTopic.subscribe(function (message) {
-        // console.log('tlvSystemTopic',message);
-        // setMessageIdx(message.data[0]);
-        // setSystem([message.data[1], message.data[2], message.data[3], message.data[4]]);
-        // if (message.data[0] === 3) {
-        //     tlvSignalTopic.publish({ data: 0 });
-        //     setSignalClasses([classes.basic50, classes.basic50]);
-        // }
-    });
-
-    hlvPostionTopic.subscribe(function (message) {
-        // console.log('hlvPostionTopic', message);
-        // testFun();
-        // reviceData();
-        // setMessageIdx(message.data[0]);
-        // setSystem([message.data[1], message.data[2], message.data[3], message.data[4]]);
-        // if (message.data[0] === 3) {
-        //     tlvSignalTopic.publish({ data: 0 });
-        //     setSignalClasses([classes.basic50, classes.basic50]);
-        // }
+        updateSystem('hlvMode' , message.data);
     });
 
 
-    // hlvSignalTopic.publish({ data: signalData });
+
+
     // tlvSignalTopic.publish({ data: signalData });
-
-    topic.subscribe((res) => {
-        rosSub(res.data);
-    })
 }
 
 

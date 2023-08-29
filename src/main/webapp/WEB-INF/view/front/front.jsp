@@ -66,10 +66,10 @@
 				</div>
 				<div id="tlvBody" style="display: none;">
 					<div class="info-body">
-						<div class="info-btn" setTlvClick="setAccept(0)">
+						<div class="info-btn" onclick="setTlvClick(0)">
 							Accept
 						</div>
-						<div class="info-btn" setTlvClick="setReject(1)">
+						<div class="info-btn" onclick="setTlvClick(1)">
 							Reject
 						</div>
 					</div>

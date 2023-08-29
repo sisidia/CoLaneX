@@ -427,11 +427,12 @@ const moveEvent = function(id,data) {
 const setHlvClick = function(signalData) {
 
     hlvSignalTopic.publish({ data: signalData });
-    console.log(signalData)
+    console.log('setHlvClick : ', signalData);
 }
 
 const setTlvClick = function(signalData) {
     tlvSignalTopic.publish({ data: signalData });
+    console.log('setTlvClick : ', signalData);
 }
 
 

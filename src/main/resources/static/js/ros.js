@@ -86,6 +86,7 @@ const initRos = function() {
     tlvGeojsonTopic.subscribe(function (message) {
         const lineObj = JSON.parse(message.data);
         updateLine('tlv-line',lineObj);
+        
     });
 
 

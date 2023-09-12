@@ -4,6 +4,22 @@ html, body {
   overflow: hidden;
 }
 
+#route {
+  z-index: 1;
+}
+
+#route2 {
+  z-index: 1;
+}
+
+#test {
+  z-index: 99;
+}
+
+#test22 {
+  z-index: 99;
+}
+
 .main {
   background-image: url("/images/bg2.png");
   width: 1920px;

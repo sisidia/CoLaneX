@@ -19,7 +19,7 @@ let mapConfig = {
         pitch: 60,
         bearing: 90
     },
-    vehicle: {
+    hlv: {
         origin: [MAP_LNG, MAP_LAT, 0],
         type: 'mtl',
         model: '/3d/3d-model',
@@ -35,7 +35,7 @@ let mapConfig = {
             z: 270
         },
     },
-    vehicle2: {
+    tlv: {
         // origin: [MAP_LNG, MAP_LAT, 0],
         origin: [MAP_LNG2, MAP_LAT2, 0],
         type: 'mtl',
@@ -59,6 +59,7 @@ let mapConfig = {
     }
 }
 
+
 let map = new mapboxgl.Map({
     container: 'map',
     style: styleUrl,
@@ -80,14 +81,13 @@ window.tb = new Threebox(
     }
 );
 
-tb.setSunlight(new Date(), map.getCenter());
-
 let vehicle,vehicle2;
 
 let vehicleArr = [];
 
 let modeId = 'hlvMode';
 
+//HLV , TLV 클릭시  처리
 const selectMode = function(e) {
     const id = e.id;
     modeId = id;
@@ -103,13 +103,11 @@ const selectMode = function(e) {
         getID('hlvBody').style.display = 'none';
         getID('tlvBody').style.display = 'block';
     }
-
-
 }
 
 
+//3D 차량 렌더링 함수
 function createCustomLayer(layerName) {
-    //create the layer
     initLine();
     let customLayer3D = {
         id: layerName,
@@ -117,32 +115,38 @@ function createCustomLayer(layerName) {
         renderingMode: '3d',
         onAdd: function(map, gl) {
             let options = {
-                type: mapConfig.vehicle.type, //model type
-                obj: mapConfig.vehicle.model + '.obj', //model .obj url
-                mtl: mapConfig.vehicle.model + '.mtl', //model .mtl url
+                type: mapConfig.hlv.type, //model type
+                obj: mapConfig.hlv.model + '.obj', //model .obj url
+                mtl: mapConfig.hlv.model + '.mtl', //model .mtl url
                 units: 'meters', // in meters
-                scale: mapConfig.vehicle.scale, //x3 times is real size for this model
-                rotation: mapConfig.vehicle.rotation, //default rotation
+                scale: mapConfig.hlv.scale, //x3 times is real size for this model
+                rotation: mapConfig.hlv.rotation, //default rotation
                 anchor: 'auto'
             }
             let options2 = {
-                type: mapConfig.vehicle2.type, //model type
-                obj: mapConfig.vehicle2.model + '.obj', //model .obj url
-                mtl: mapConfig.vehicle2.model + '.mtl', //model .mtl url
+                type: mapConfig.tlv.type, //model type
+                obj: mapConfig.tlv.model + '.obj', //model .obj url
+                mtl: mapConfig.tlv.model + '.mtl', //model .mtl url
                 units: 'meters', // in meters
-                scale: mapConfig.vehicle2.scale, //x3 times is real size for this model
-                rotation: mapConfig.vehicle2.rotation, //default rotation
+                scale: mapConfig.tlv.scale, //x3 times is real size for this model
+                rotation: mapConfig.tlv.rotation, //default rotation
                 anchor: 'auto'
             }
             tb.loadObj(options, function(model) {
-                vehicleArr['vehicle'] = model.setCoords(mapConfig.vehicle.origin);
-                vehicleArr['vehicle'].setRotation(mapConfig.vehicle.startRotation);
-                tb.add(vehicleArr['vehicle']);
+                vehicleArr['hlv'] = model.setCoords(mapConfig.hlv.origin);
+                vehicleArr['hlv'].setRotation(mapConfig.hlv.startRotation);
+
+                vehicleArr['hlv'].addTooltip("HLV", true, mapConfig.hlv.anchor, true, 2);
+
+                vehicleArr['hlv'].renderOrder = 999;
+                vehicleArr['hlv'].onBeforeRender = function( renderer ) { renderer.clearDepth(); };
+                tb.add(vehicleArr['hlv']);
             });
             tb.loadObj(options2, function(model) {
-                vehicleArr['vehicle2'] = model.setCoords(mapConfig.vehicle2.origin);
-                vehicleArr['vehicle2'].setRotation(mapConfig.vehicle2.startRotation);
-                tb.add(vehicleArr['vehicle2']);
+                vehicleArr['tlv'] = model.setCoords(mapConfig.tlv.origin);
+                vehicleArr['tlv'].setRotation(mapConfig.tlv.startRotation);
+                vehicleArr['tlv'].addTooltip("TLV", true, mapConfig.tlv.anchor, true, 2);
+                tb.add(vehicleArr['tlv']);
             });
         },
         render: function(gl, matrix) {
@@ -157,23 +161,25 @@ function easing(t) {
     return t * (20 - t);
 }
 
-
 map.on('style.load', function() {
 
     let l = mapConfig.names.compositeLayer;
     if (api.buildings) {
         if (!map.getLayer(l)) {
             map.addLayer(createCompositeLayer(l));
-
         }
     }
 
-    map.addLayer(createCustomLayer('3d-model'), 'waterway-label');
-    map.getCanvas().focus();
+    map.addLayer(createCustomLayer('vehicle-layer'), 'waterway-label');
 
+    map.getCanvas().focus();
     printLocation();
+
+    map.moveLayer( 'hlv-line', 'vehicle-layer');
+    map.moveLayer('tlv-line', 'vehicle-layer');
 });
 
+//맵 정보
 function createCompositeLayer(layerId) {
     let layer = {
         'id': layerId,
@@ -209,7 +215,7 @@ function createCompositeLayer(layerId) {
                 minZoom + 0.05,
                 ['get', 'min_height']
             ],
-            'fill-extrusion-opacity': 0.5
+            'fill-extrusion-opacity': 1
         }
     };
     return layer;
@@ -223,8 +229,12 @@ const getBearing = function(currentLng, currentLat, destinationLng, destinationL
     return (bearing * 180 / Math.PI + 360) % 360;
 }
 
+
+
+
+//라인 초기 시작
 const initLine = function() {
-    map.addSource('route', {
+    map.addSource('hlv-line', {
         'type': 'geojson',
         'data': {
             'type': 'Feature',
@@ -239,19 +249,20 @@ const initLine = function() {
         }
     });
     map.addLayer({
-        'id': 'route',
+        'id': 'hlv-line',
         'type': 'line',
-        'source': 'route',
+        'source': 'hlv-line',
         'layout': {
             'line-join': 'round',
             'line-cap': 'round'
         },
         'paint': {
             'line-color': 'blue',
-            'line-width': 8
+            'line-width': 8,
+            'line-opacity':0.3
         }
     });
-    map.addSource('route2', {
+    map.addSource('tlv-line', {
         'type': 'geojson',
         'data': {
             'type': 'Feature',
@@ -267,22 +278,26 @@ const initLine = function() {
     });
 
     map.addLayer({
-        'id': 'route2',
+        'id': 'tlv-line',
         'type': 'line',
-        'source': 'route2',
+        'source': 'tlv-line',
         'layout': {
             'line-join': 'round',
             'line-cap': 'round'
         },
         'paint': {
             'line-color': 'red',
-            'line-width': 8
+            'line-width': 8,
+            'line-opacity':0.3
         }
     });
 
 }
 
-const updataVehicle = function(id, data) {
+let vehicleData = {};
+
+//ROS 차량 위치 변경 함수
+const updateVehicle = function(id, data) {
 
     let vehicleObj = vehicleArr[id];
     if(typeof(vehicleObj) == "undefined") return;
@@ -292,30 +307,43 @@ const updataVehicle = function(id, data) {
     const lng = vehicleObj.coordinates[0];
     let deg = getBearing(lng,lat,arrLng,arrLat);
     vehicleObj.setRotation(data.z-90);
-
-    vehicleObj.setCoords([arrLng, arrLat]);
-    if(modeId== 'hlvMode' && id == 'vehicle') {
-        let options = {
-            center: vehicleObj.coordinates,
-            bearing: data.z,
-            easing: easing
-        };
-        map.jumpTo(options);
-    }
-    if(modeId== 'tlvMode' && id == 'vehicle2') {
+    vehicleData[id] = data;
+    if(modeId== 'hlvMode' && id == 'hlv') {
+        vehicleArr[id].setCoords([arrLng, arrLat]);
+        // console.log(vehicleData['tlv'])
+        let tlvObj = vehicleArr['tlv'];
+        tlvObj.setCoords([vehicleData['tlv']['y'], vehicleData['tlv']['x']]);
         let options = {
             center: vehicleObj.coordinates,
             bearing: deg-90,
             easing: easing
         };
+
         map.jumpTo(options);
     }
+    else if(modeId== 'tlvMode' && id == 'tlv') {
+        vehicleArr[id].setCoords([arrLng, arrLat]);
+        let hlvObj = vehicleArr['hlv'];
+        hlvObj.setCoords([vehicleData['hlv']['y'], vehicleData['hlv']['x']]);
+        let options = {
+            center: vehicleObj.coordinates,
+            bearing: deg-90,
+            easing: easing
+        };
+
+        map.jumpTo(options);
+    }
+
+
 }
 
+//ROS 업데이트 라인 함수
 const updateLine = function(id, data) {
     map.getSource(id).setData(data);
 }
 
+
+//메시지 함수
 const getMessage = function(id, status) {
 
     let hlvMessage = [];
@@ -343,6 +371,8 @@ const getMessage = function(id, status) {
 
 }
 
+
+//ROS 시스템 메시지 함수
 const updateSystem = function(id,data) {
     const state = data[0];
     const gps = data[1];
@@ -355,6 +385,10 @@ const updateSystem = function(id,data) {
         updateIcon('gpsStatus', gps, 'gps');
         updateIcon('v2xStatus', v2x, 'v2x');
         getID('hlvMessageTxt').innerText = getMessage(id, state);
+
+        if(state == 3) {
+            hlvSignalTopic.publish({ data: 0 });
+        }
     }
     else {
         getID('latency').innerText = latency.toFixed(2);
@@ -362,8 +396,14 @@ const updateSystem = function(id,data) {
         updateIcon('gpsStatus', gps, 'gps');
         updateIcon('v2xStatus', v2x, 'v2x');
         getID('tlvMessageTxt').innerText = getMessage(id, state);
+
+
+        if(state == 3) {
+            tlvSignalTopic.publish({ data: 0 });
+        }
     }
 }
+
 
 const updateIcon = function(id, status, icon) {
 
@@ -377,8 +417,53 @@ const updateIcon = function(id, status, icon) {
 }
 
 
-//차량 이동 구현은 여기서
-// data -> {'lat',35.xxxx , 'lng':127.xxxx}
+
+//hlv 클릭 이벤트
+const setHlvClick = function(signalData) {
+
+    const interval = setInterval(() => {
+        hlvSignalTopic.publish({ data: signalData });
+    }, 200);
+
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 10000);
+}
+
+
+
+//tlv 클릭 이벤트
+const setTlvClick = function(signalData) {
+
+    const interval = setInterval(() => {
+        tlvSignalTopic.publish({ data: signalData });
+    }, 200);
+
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 10000);
+
+}
+
+
+
+
+
+
+//test
+let idx = 0;
+let idx2 = 0;
+let codeArr = [
+    [ 127.11058607387321, 37.39984828837143],
+    [127.10237920911715, 37.39987196235322]
+];
+
+
+let codeArr2 = [
+    [127.11067253000084, 37.39980936847563],
+    [127.10235520557052 , 37.39984557140154]
+]
+
 const moveEvent = function(id,data) {
     let vehicleObj = vehicleArr[id];
 
@@ -397,7 +482,7 @@ const moveEvent = function(id,data) {
         const interpolatedPoint = turf.along(turf.lineString([[lng,lat],[arrLng, arrLat]]), distance /  steps * j, { units: 'meters' });
         result.push(interpolatedPoint.geometry.coordinates)
     }
-    for(let i=0; i < result.length; i++){
+    for(let i=0; i < result.length-10; i++){
         delay += 16.6;
         setTimeout(async () => {
             vehicleObj.setCoords(result[i]);
@@ -424,34 +509,6 @@ const moveEvent = function(id,data) {
 
 
 
-const setHlvClick = function(signalData) {
-
-    hlvSignalTopic.publish({ data: signalData });
-    console.log('setHlvClick : ', signalData);
-}
-
-const setTlvClick = function(signalData) {
-    tlvSignalTopic.publish({ data: signalData });
-    console.log('setTlvClick : ', signalData);
-}
-
-
-
-//test
-let idx = 0;
-let idx2 = 0;
-let codeArr = [
-    [ 127.11058607387321, 37.39984828837143],
-    [127.10237920911715, 37.39987196235322]
-];
-
-let codeArr2 = [
-    [127.11067253000084, 37.39980936847563],
-    [127.10235520557052 , 37.39984557140154]
-]
-
-
-
 const test = function() {
     let data = {};
     let data2 = {};
@@ -470,7 +527,7 @@ const test = function() {
         data2['lng'] = codeArr2[1][0];
         data2['lat'] = codeArr2[1][1];
         idx = 1;
-    }
+    }``
 
     moveEvent('vehicle', data);
     moveEvent('vehicle2', data2);

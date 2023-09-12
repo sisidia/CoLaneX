@@ -19,11 +19,14 @@
 	<script src="/js/ros.js" defer></script>
 	<script src="/js/front.js" defer></script>
 	<link href="/css/front.css" rel="stylesheet">
-<%--	<script src="/js/move.js" defer></script>--%>
 	<script src="/js/util.js" defer></script>
 	<script type="module" src="/js/string.js"></script>
 	<script src="https://unpkg.com/@turf/turf@6/turf.min.js" ></script> <%-- Turf : to smoothly animate a point along the distance of a line --%>
-	<script src="https://unpkg.com/three@0.126.0/build/three.min.js"></script>
+<%--	<script src="https://unpkg.com/three@0.126.0/build/three.min.js"></script>--%>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+    </script>
 	<script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
 	<script src="https://cdn.jsdelivr.net/gh/jscastro76/threebox@v.2.2.2/dist/threebox.min.js" type="text/javascript"></script>
 <%--	<link href="https://cdn.jsdelivr.net/gh/jscastro76/threebox@v.2.2.2/dist/threebox.css" rel="stylesheet">--%>
@@ -45,11 +48,11 @@
 				</div>
 				<div id="hlvBody">
 					<div class="info-body">
-						<div class="info-btn" onclick="setHlvClick(0)">
+						<div class="info-btn" onclick="setHlvClick(1)">
 							<img src="/images/left-btn.png">
 							Left
 						</div>
-						<div class="info-btn" onclick="setHlvClick(1)">
+						<div class="info-btn" onclick="setHlvClick(3)">
 							Right
 							<img src="/images/right-btn.png">
 						</div>
@@ -66,10 +69,10 @@
 				</div>
 				<div id="tlvBody" style="display: none;">
 					<div class="info-body">
-						<div class="info-btn" onclick="setTlvClick(0)">
+						<div class="info-btn" onclick="setTlvClick(1)">
 							Accept
 						</div>
-						<div class="info-btn" onclick="setTlvClick(1)">
+						<div class="info-btn" onclick="setTlvClick(2)">
 							Reject
 						</div>
 					</div>
